@@ -12,6 +12,11 @@ Odświeżona, nowoczesna nakładka na ligę KOZTS, która dynamicznie scrappuje 
 - Python 3.11+
 - Pakiety z `requirements.txt` (`pip install -r requirements.txt`).
 
+## Skąd pobrać pliki projektu
+- Wejdź w repozytorium (np. widok GitHub), kliknij zielony przycisk **Code** i wybierz **Download ZIP** – to pobierze cały folder na Twój komputer.
+- Jeśli wolisz terminal i masz zainstalowanego gita: `git clone https://github.com/<twoja-nazwa-uzytkownika>/SocieTTy.git` (podmień adres na ten, pod którym hostujesz repo).
+- Po pobraniu rozpakuj ZIP i przejdź do folderu `SocieTTy`.
+
 ## Uruchomienie
 ### Ekspresowa wersja (dla osób obytego z terminalem)
 ```bash
