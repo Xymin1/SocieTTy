@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOZTS Hyper League</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Manrope:wght@600;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="logo"><span>KOZTS</span> Hyper League</div>
+      <nav>
+        <a href="https://liga.kozts.pl/" target="_blank" rel="noreferrer">Oryginał</a>
+        <a href="https://github.com/" target="_blank" rel="noreferrer">Kod źródłowy</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <div>
+            <p class="badge">Live scraping ⚡️</p>
+            <h1 id="phase-title">KOZTS Hyper League</h1>
+            <p class="subtitle">
+              Wyciągaj na żywo wyniki, tabele i rankingi z liga.kozts.pl. Zero ręcznego
+              przepisywania – tylko szybkie pobieranie i pełna automatyzacja.
+            </p>
+            <p class="status" id="status">Gotowe do startu.</p>
+          </div>
+          <div class="glass">
+            <div class="control-grid">
+              <label>
+                ID fazy KOZTS
+                <input id="phase-id" type="number" value="364" min="1" />
+              </label>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
+              <button id="load-phase">Załaduj dane</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass">
+        <h2>Spotkania</h2>
+        <div id="matches" class="grid"></div>
+      </section>
+
+      <section class="glass">
+        <h2>Tabela drużyn</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Drużyna</th>
+              <th>M</th>
+              <th>Pkt</th>
+              <th>Sety</th>
+              <th>Małe punkty</th>
+            </tr>
+          </thead>
+          <tbody id="teams"></tbody>
+        </table>
+      </section>
+
+      <section class="glass">
+        <h2>Ranking indywidualny</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Zawodnik</th>
+              <th>Klub</th>
+              <th>Bilans</th>
+              <th>Punkty</th>
+            </tr>
+          </thead>
+          <tbody id="players"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <div id="toast"></div>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
