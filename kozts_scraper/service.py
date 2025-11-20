@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import List, Optional
 
 import httpx
-from fastapi import HTTPException
 
 from kozts_scraper import parser
 from kozts_scraper.models import Match, PhaseSummary, PlayerRanking, TeamRanking
@@ -38,18 +37,19 @@ class KoztsScraper:
     async def hydrate_phase(self, phase_id: int) -> PhaseSummary:
         try:
             html = await self.fetch_phase_html(phase_id)
-            matches, teams, players = await asyncio.gather(
-                self.extract_matches(html, phase_id),
-                self.extract_teams(html, phase_id),
-                self.extract_players(html, phase_id),
-            )
-            title = f"Faza {phase_id}"
         except httpx.HTTPError as exc:  # pragma: no cover - network dependent
-            # Fall back to bundled demo data if the live source is unavailable.
-            if phase_id != SAMPLE_PHASE_ID:
-                raise HTTPException(status_code=502, detail=f"Błąd pobierania danych z KOZTS: {exc}")
-            matches, teams, players = SAMPLE_MATCHES, SAMPLE_TEAMS, SAMPLE_PLAYERS
-            title = SAMPLE_TITLE
+            return self._offline_phase(phase_id, f"Błąd pobierania danych z KOZTS: {exc}")
+
+        matches, teams, players = await asyncio.gather(
+            self.extract_matches(html, phase_id),
+            self.extract_teams(html, phase_id),
+            self.extract_players(html, phase_id),
+        )
+
+        if not any([matches, teams, players]):
+            return self._offline_phase(phase_id, "Brak tabel na stronie KOZTS – wyświetlamy dane demo.")
+
+        title = f"Faza {phase_id}"
 
         return PhaseSummary(
             phase_id=phase_id,
@@ -58,6 +58,21 @@ class KoztsScraper:
             matches=matches,
             teams=teams,
             players=players,
+        )
+
+    def _offline_phase(self, phase_id: int, reason: str) -> PhaseSummary:
+        demo_title = f"{SAMPLE_TITLE} (tryb offline)"
+        if reason:
+            demo_title = f"{demo_title} – {reason}"
+
+        # For unknown phase IDs we still return sample data so UI is populated.
+        return PhaseSummary(
+            phase_id=phase_id,
+            title=demo_title,
+            updated_at=datetime.utcnow(),
+            matches=SAMPLE_MATCHES,
+            teams=SAMPLE_TEAMS,
+            players=SAMPLE_PLAYERS,
         )
 
     async def close(self) -> None:

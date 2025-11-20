@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from bs4 import BeautifulSoup
 
@@ -19,11 +19,42 @@ def _parse_date(value: str) -> Optional[datetime]:
     return None
 
 
+def _extract_headers(table) -> List[str]:
+    headers = [th.get_text(strip=True) for th in table.select("thead th")]
+    if headers:
+        return headers
+
+    first_row = table.find("tr")
+    if first_row:
+        headers = [cell.get_text(strip=True) for cell in first_row.find_all(["td", "th"])]
+    return headers
+
+
+def _find_table_by_headers(soup: BeautifulSoup, header_keywords: Iterable[str]):
+    best_table = None
+    best_score = 0
+
+    for table in soup.find_all("table"):
+        headers = _extract_headers(table)
+        normalized = [h.lower() for h in headers]
+
+        score = 0
+        for keyword in header_keywords:
+            if any(keyword in header for header in normalized):
+                score += 1
+
+        if score > best_score:
+            best_table = table
+            best_score = score
+
+    return best_table
+
+
 def parse_table_rows(table) -> List[dict]:
     if table is None:
         return []
 
-    headers = [th.get_text(strip=True) for th in table.select("thead th")]
+    headers = _extract_headers(table)
     body_rows = table.select("tbody tr")
 
     if not headers and body_rows:
@@ -41,7 +72,21 @@ def parse_table_rows(table) -> List[dict]:
 
 def parse_matches(html: str, phase_id: int) -> List[Match]:
     soup = BeautifulSoup(html, "html.parser")
-    matches_table = soup.select_one("table.matches, table#matches, .matches table")
+    matches_table = _find_table_by_headers(
+        soup,
+        header_keywords=(
+            "gosp",
+            "goś",
+            "gość",
+            "away",
+            "home",
+            "wynik",
+            "result",
+            "kolej",
+            "termin",
+            "data",
+        ),
+    )
     rows = parse_table_rows(matches_table)
 
     parsed: List[Match] = []
@@ -67,7 +112,19 @@ def parse_matches(html: str, phase_id: int) -> List[Match]:
 
 def parse_teams(html: str, phase_id: int) -> List[TeamRanking]:
     soup = BeautifulSoup(html, "html.parser")
-    table = soup.select_one("table.standings, table#standings, .teams table")
+    table = _find_table_by_headers(
+        soup,
+        header_keywords=(
+            "dru",
+            "team",
+            "pkt",
+            "punk",
+            "małe",
+            "set",
+            "m ",
+            "mp",
+        ),
+    )
     rows = parse_table_rows(table)
 
     parsed: List[TeamRanking] = []
@@ -99,7 +156,17 @@ def parse_teams(html: str, phase_id: int) -> List[TeamRanking]:
 
 def parse_players(html: str, phase_id: int) -> List[PlayerRanking]:
     soup = BeautifulSoup(html, "html.parser")
-    table = soup.select_one("table.players, table#players, .players table")
+    table = _find_table_by_headers(
+        soup,
+        header_keywords=(
+            "nazw",
+            "zaw",
+            "player",
+            "klub",
+            "bilans",
+            "punk",
+        ),
+    )
     rows = parse_table_rows(table)
 
     parsed: List[PlayerRanking] = []
